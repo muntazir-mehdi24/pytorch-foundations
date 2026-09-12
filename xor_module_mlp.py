@@ -36,7 +36,7 @@ targets = torch.tensor([
 # loss fn and optimizer
 
 criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr = 0.1)
+optimizer = optim.Adam(model.parameters(), lr = 0.01)
 
 # training loop
 
@@ -47,7 +47,7 @@ for epochs in range(100000):
     loss.backward()
     optimizer.step()
     
-    if epochs % 10000 == 0:
+    if epochs % 20000 == 0:
         print(f"Epoch {epochs} || Total Loss: {loss.item():.4f}")
 
 
