@@ -29,7 +29,7 @@ dataset = [
 # loss fn and optimizer
 
 criterion = nn.MSELoss()
-optimizer = optim.SGD(model.parameters(), lr = 0.89)
+optimizer = optim.Adam(model.parameters(), lr = 0.11)
 
 # training loop
 
