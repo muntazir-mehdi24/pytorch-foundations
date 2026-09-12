@@ -41,14 +41,14 @@ optimizer = optim.Adam(model.parameters(), lr = 0.01)
 
 # training loop
 
-for epochs in range(100000):
+for epochs in range(10000):
     optimizer.zero_grad()
     preds = model(inputs)
     loss = criterion(preds, targets)
     loss.backward()
     optimizer.step()
     
-    if epochs % 20000 == 0:
+    if epochs % 2000 == 0:
         print(f"Epoch {epochs} || Total Loss: {loss.item():.4f}")
 
 
@@ -58,4 +58,21 @@ with torch.no_grad():
     final_preds = model(inputs)
     for i in range(len(inputs)):
         print(f"Inputs: {inputs[i].tolist()} | Target: {targets[i].item()} | Guess: {final_preds[i].item():.4f} (Rounded: {round(final_preds[i].item())})")
+
+
+print("="*150)
+print(f"Hidden layer")
+print(f"weights \n{model.fc1.weight.data}")
+print(f"Biases \n{model.fc1.bias.data}")
+
+print("\n--- Hidden Layer Activations (The Warp) ---")
+with torch.no_grad():
+    hidden_out = torch.sigmoid(model.fc1(inputs))
+    for i in range(len(inputs)):
+        print(f"Input: {inputs[i].tolist()} --> Hidden Space Coordinates: [{hidden_out[i][0]:.4f}, {hidden_out[i][1]:.4f}] --> Guess: {final_preds[i].item():.4f}")
+
+print("\n--- Layer 2 (Output Weights) ---")
+print("Weights:", model.fc2.weight.data)
+print("Bias:", model.fc2.bias.data)
+
 		
