@@ -19,51 +19,42 @@ print(model)
 	
 # dataset
 
-dataset = [
-	(torch.tensor([0.0, 0.0]), torch.tensor([0.0])),
-	(torch.tensor([1.0, 0.0]), torch.tensor([1.0])),
-	(torch.tensor([0.0, 1.0]), torch.tensor([1.0])),
-	(torch.tensor([1.0, 1.0]), torch.tensor([0.0]))
-]
+inputs = torch.tensor([
+    [0.0, 0.0],
+    [0.0, 1.0],
+    [1.0, 0.0],
+    [1.0, 1.0]
+])
+
+targets = torch.tensor([
+    [0.0],
+    [1.0],
+    [1.0],
+    [0.0]
+])
 
 # loss fn and optimizer
 
 criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr = 0.11)
+optimizer = optim.Adam(model.parameters(), lr = 0.1)
 
 # training loop
 
-for epochs in range(50000):
+for epochs in range(100000):
+    optimizer.zero_grad()
+    preds = model(inputs)
+    loss = criterion(preds, targets)
+    loss.backward()
+    optimizer.step()
+    
+    if epochs % 10000 == 0:
+        print(f"Epoch {epochs} || Total Loss: {loss.item():.4f}")
 
-	epoch_loss = 0.0
-
-	for inputs, target in dataset:
-		
-		# zero out gradients from previous step
-		optimizer.zero_grad()
-
-		# forward pass 
-		pred = model(inputs)
-
-		# loss 
-		loss = criterion(pred, target)
-		epoch_loss += loss.item()
-
-		# backward pass
-		loss.backward()
-
-		# optimizer step
-		optimizer.step()
-	
-	if epochs % 5000 == 0:
-		print(f"Epoch {epochs} || Total Loss: {epoch_loss:.4f}")
 
 print("="*150)
-
 print("Final Eval.")
 with torch.no_grad():
-	for inputs, target in dataset:
-		pred = model(inputs)
-
-		print(f"Inputs: {inputs.tolist()} | Target: {target.item()} | Guess: {pred.item():.4f}")
+    final_preds = model(inputs)
+    for i in range(len(inputs)):
+        print(f"Inputs: {inputs[i].tolist()} | Target: {targets[i].item()} | Guess: {final_preds[i].item():.4f} (Rounded: {round(final_preds[i].item())})")
 		
