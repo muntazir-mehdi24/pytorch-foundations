@@ -14,7 +14,8 @@ class XOR_MLP(nn.Module):
 		x = torch.sigmoid(self.fc2(x))
 		return x
 
-model =  XOR_MLP()
+torch.manual_seed(42)
+model = XOR_MLP()
 print(model)
 	
 # dataset
