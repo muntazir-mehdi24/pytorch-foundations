@@ -8,7 +8,7 @@ class XOR_MLP(nn.Module):
     def __init__(self):
         super().__init__()
         self.fc1 = nn.Linear(2, 3)
-	self.fc2 = nn.Linear(3, 1)
+        self.fc2 = nn.Linear(3, 1)
 
     def forward(self, x):
         x = torch.sigmoid(self.fc1(x))
@@ -81,5 +81,5 @@ for epochs in range(10000):
 plt.ioff()
 
 print("="*150)
-print("Final Evaluation & Internal Inspection Complete.")
+
 plt.show()
