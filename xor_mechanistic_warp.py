@@ -81,5 +81,5 @@ for epochs in range(10000):
 plt.ioff()
 
 print("="*150)
-
+print("Final Evaluation & Internal Inspection Complete.")
 plt.show()
