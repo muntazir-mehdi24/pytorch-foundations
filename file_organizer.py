@@ -1,7 +1,7 @@
 import os
 import shutil
 
-mapping = {"JPEG" : "IMAGES", "PNG" : "IMAGES", "JPG" : "IMAGES", "GIF" : "IMAGES", "TXT" : "DOCUMENTS", "PDF" : "DOCUMENTS", "CSV" : "CSV FILES", "PY" : "PYTHON FILES", "MP3" : "AUDIO FILES", "MP4" : "VIDEO FILES", "MKV" : "VIDEO FILES", "EXE" : "EXECUTABLES", "ZIP" : "ARCHIVES", "RAR" : "ARCHIVES", "DOCX" : "DOCUMENTS", "PPTX" : "DOCUMENTS", "XLSX" : "SHEETS"}
+# mapping = {"JPEG" : "IMAGES", "PNG" : "IMAGES", "JPG" : "IMAGES", "GIF" : "IMAGES", "TXT" : "DOCUMENTS", "PDF" : "DOCUMENTS", "CSV" : "CSV FILES", "PY" : "PYTHON FILES", "MP3" : "AUDIO FILES", "MP4" : "VIDEO FILES", "MKV" : "VIDEO FILES", "EXE" : "EXECUTABLES", "ZIP" : "ARCHIVES", "RAR" : "ARCHIVES", "DOCX" : "DOCUMENTS", "PPTX" : "DOCUMENTS", "XLSX" : "SHEETS"}
 
 target_dir = os.path.expanduser("~/Downloads")
 
