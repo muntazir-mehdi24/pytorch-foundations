@@ -47,7 +47,7 @@ xx, yy = np.meshgrid(np.linspace(-0.2, 1.2, 100), np.linspace(-0.2, 1.2, 100))
 grid_tensor = torch.tensor(np.c_[xx.ravel(), yy.ravel()], dtype=torch.float32)
 
 # Training Loop with Dual Live Animation
-for epochs in range(10000):
+for epochs in range(2000):
     optimizer.zero_grad()
     preds = model(inputs)
     loss = criterion(preds, targets)
@@ -83,5 +83,18 @@ for epochs in range(10000):
 plt.ioff()
 
 print("="*150)
+
+# get weights and biases from the first layer
+weights = model.fc1.weight.data.numpy()
+biases = model.fc1.bias.data.numpy()
+
+
+# plug them in the form of equations
+for i in range(weights.shape[0]):
+    w1, w2 = weights[i]
+    b = biases[i]
+    print(f"Equation for Neuron {i}: x2 = {-(w1/w2):.2f} * x1 + {-(b/w2):.2f}")
+
+
 print("Final Evaluation & Internal Inspection Complete.")
 plt.show()
