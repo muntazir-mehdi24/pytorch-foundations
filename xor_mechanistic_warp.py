@@ -85,8 +85,8 @@ plt.ioff()
 print("="*150)
 
 # get weights and biases from the first layer
-weights = model.fc2.weight.data.numpy()
-biases = model.fc2.bias.data.numpy()
+weights = model.fc1.weight.data.numpy()
+biases = model.fc1.bias.data.numpy()
 
 
 # plug them in the form of equations
