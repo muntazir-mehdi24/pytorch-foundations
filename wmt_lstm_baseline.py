@@ -114,6 +114,14 @@ class Seq2Seq(nn.Module):
             
         return outputs
 
+class attention(nn.Module):
+    def __init__(self, enc_hid_dim, dec_hid_dim):
+        super(attention, self).__init__()
+        self.attn = nn.Linear(enc_hid_dim + dec_hid_dim, dec_hid_dim)
+
+    def forward(self, hidden, encoder_outputs):
+        pass
+
 # ==========================================
 # 4. Training Function
 # ==========================================
