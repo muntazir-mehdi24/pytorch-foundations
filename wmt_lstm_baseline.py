@@ -72,15 +72,16 @@ class Encoder(nn.Module):
         return outputs, (hidden, cell)
 
 class Decoder(nn.Module):
-    def __init__(self, output_dim, emb_dim, hid_dim, n_layers, d):
+    def __init__(self, output_dim, emb_dim, hid_dim, n_layers, d, attention):
         super(Decoder, self).__init__()
+        self.attention = attention
         self.output_dim = output_dim
         self.hid_dim = hid_dim
         self.n_layers = n_layers
         self.embedding = nn.Embedding(output_dim, emb_dim)
         self.dropout = nn.Dropout(d)
-        self.rnn = nn.LSTM(emb_dim, hid_dim, n_layers, dropout=d)
-        self.fc_out = nn.Linear(hid_dim, output_dim)
+        self.rnn = nn.LSTM(emb_dim + hid_dim, hid_dim, n_layers, dropout=d)
+        self.fc_out = nn.Linear(hid_dim * 2 + emb_dim, output_dim)
 
     def forward(self, input, hidden, cell):
         input = input.unsqueeze(0)
@@ -118,9 +119,14 @@ class attention(nn.Module):
     def __init__(self, enc_hid_dim, dec_hid_dim):
         super(attention, self).__init__()
         self.attn = nn.Linear(enc_hid_dim + dec_hid_dim, dec_hid_dim)
+        self.v = nn.Linear(dec_hid_dim, 1)
 
     def forward(self, hidden, encoder_outputs):
-        pass
+        src_len = encoder_outputs.shape[0]
+        hidden = hidden[-1].unsqueeze(1).repeat(1, src_len, 1)
+        energy = torch.tanh(self.attn(torch.cat((hidden, encoder_outputs.permute(1, 0, 2)), dim=2)))
+        attention = self.v(energy).squeeze(2)
+        return torch.softmax(attention, dim=1)
 
 # ==========================================
 # 4. Training Function
