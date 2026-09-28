@@ -9,6 +9,7 @@ from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader
 from torchtext.data.metrics import bleu_score
 import matplotlib.pyplot as plt
+from neuroplot import LiveVisualizer
 
 # ==========================================
 # 1. Tokenizers and Vocabularies
@@ -246,24 +247,13 @@ criterion = nn.CrossEntropyLoss(ignore_index=pad_idx)
 num_epochs = 20
 test_sentence = "Ich werde der Armee beitreten."
 
-# Initialize interactive matplotlib window
-plt.ion()
-fig, ax = plt.subplots()
-loss_history = []
+viz = LiveVisualizer(plots=["loss"], model=model, update_every=1)
 
 print("Starting training...")
 for epoch in range(num_epochs):
     loss = train(model, train_loader, optimizer, criterion, clip=1)
     
-    # Update matplotlib graph dynamically
-    loss_history.append(loss)
-    ax.clear()
-    ax.plot(range(1, epoch + 2), loss_history, marker='o', color='blue', label="Train Loss")
-    ax.set_title("Seq2Seq LSTM Training Loss")
-    ax.set_xlabel("Epoch")
-    ax.set_ylabel("Loss")
-    ax.legend()
-    plt.pause(0.1)  # Pauses execution just long enough to draw the frame
+    viz.step(epoch=epoch+1, loss=loss)
     
     # Run live inference checkpoint
     translated_tokens = translate_sentence(model, test_sentence, device)
@@ -272,9 +262,8 @@ for epoch in range(num_epochs):
     print("=> Saving checkpoint")
     print(f"Translated example sentence\n {translated_tokens}")
 
-# Keep the plot window open at the end
-plt.ioff()
-plt.show(block=False)
+viz.close()
+plt.show()
 
 # Calculate Final Baseline Performance
 print("\nEvaluating BLEU Score...")
