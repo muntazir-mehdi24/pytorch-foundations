@@ -82,12 +82,20 @@ class Decoder(nn.Module):
         self.dropout = nn.Dropout(d)
         self.rnn = nn.LSTM(emb_dim + hid_dim, hid_dim, n_layers, dropout=d)
         self.fc_out = nn.Linear(hid_dim * 2 + emb_dim, output_dim)
+        
 
-    def forward(self, input, hidden, cell):
+    def forward(self, input, hidden, cell, encoder_outputs):
         input = input.unsqueeze(0)
         embedded = self.dropout(self.embedding(input))
-        output, (hidden, cell) = self.rnn(embedded, (hidden, cell))
-        prediction = self.fc_out(output.squeeze(0))
+        a = self.attention(hidden, encoder_outputs).unsqueeze(1)
+        encoder_outputs = encoder_outputs.permute(1, 0, 2)
+        weighted = torch.bmm(a, encoder_outputs).permute(1, 0, 2)
+        rnn_input = torch.cat((embedded, weighted), dim=2)
+        output, (hidden, cell) = self.rnn(rnn_input, (hidden, cell))
+        output = output.squeeze(0)
+        weighted = weighted.squeeze(0)
+        embedded = embedded.squeeze(0)
+        prediction = self.fc_out(torch.cat((output, weighted, embedded), dim=1))
         return prediction, hidden, cell
 
 class Seq2Seq(nn.Module):
@@ -107,7 +115,7 @@ class Seq2Seq(nn.Module):
 
         input = trg[0, :]
         for t in range(1, targ_len):
-            output, hidden, cell = self.decoder(input, hidden, cell)
+            output, hidden, cell = self.decoder(input, hidden, cell, encoder_outputs)
             outputs[t] = output
             teacher_force = np.random.random() < teacher_forcing_ratio
             top1 = output.argmax(1)
@@ -178,7 +186,7 @@ def translate_sentence(model, sentence, device, max_length=50):
         trg_tensor = torch.tensor([trg_indexes[-1]], dtype=torch.long).to(device)
         
         with torch.no_grad():
-            output, hidden, cell = model.decoder(trg_tensor, hidden, cell)
+            output, hidden, cell = model.decoder(trg_tensor, hidden, cell, encoder_outputs)
             
         pred_token = output.argmax(1).item()
         trg_indexes.append(pred_token)
@@ -223,7 +231,8 @@ train_iter = Multi30k(split='train', language_pair=('de', 'en'))
 train_loader = DataLoader(train_iter, batch_size=batch_size, shuffle=True, collate_fn=collate_fn)
 
 enc = Encoder(input_dim_encoder, enc_emb_dim, hid_dim, n_layers, enc_dropout)
-dec = Decoder(output_dim, dec_emb_dim, hid_dim, n_layers, dec_dropout)
+attn = attention(hid_dim, hid_dim)
+dec = Decoder(output_dim, dec_emb_dim, hid_dim, n_layers, dec_dropout, attn)
 model = Seq2Seq(enc, dec, device).to(device)
 
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
