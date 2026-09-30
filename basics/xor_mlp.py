@@ -28,7 +28,7 @@ b2 = 0.0
 b3 = 0.0
 l = 0.1
 
-for epochs in range(20):
+for epochs in range(100):
 
 	z11 = x1*w11 + x2*w21 + b1
 	z12 = x1*w12 + x2*w22 + b2
