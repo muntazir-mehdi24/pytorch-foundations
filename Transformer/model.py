@@ -44,8 +44,12 @@ class position_embeddings(nn.Module):
         # we are not using .to(x.device) here because the position embeddings are already registered as a buffer in the module, which means they will automatically be moved to the same device as the input tensor (x) during training and inference. This ensures that the positional embeddings are always on the correct device without needing to explicitly call .to(x.device).
         return self.dropout(x) # this applies dropout to the combined input and position embeddings, randomly setting a fraction of the elements to zero during training. Dropout helps prevent overfitting by encouraging the model to learn more robust representations that do not rely on specific features in the input data.
 
+# class multi_head_attention
+
+class multi_head_attention(nn.Module):
+    pass
+
 # class layer_norm
 
 # class feed_forward_block
 
-# class multi_head_attention
