@@ -96,5 +96,8 @@ class multi_head_attention(nn.Module):
 
 # class layer_norm
 
+class layer_norm(nn.Module):
+    pass 
+
 # class feed_forward_block
 
