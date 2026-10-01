@@ -114,5 +114,16 @@ class layer_norm(nn.Module):
 # class feed_forward_block
 
 class feed_forward_block(nn.Module):
-    pass
+    def __init__(self, d_model, d_ff, dropout):
+        super().__init__()
+        self.linear1 = nn.Linear(d_model, d_ff)  # first linear layer to project the input to a higher-dimensional space
+        self.dropout = nn.Dropout(dropout)  # dropout layer to prevent overfitting
+        self.linear2 = nn.Linear(d_ff, d_model)  # second linear layer to project back to the original dimension
+
+    def forward(self, x):
+        x = self.linear1(x)  # apply the first linear transformation
+        x = torch.relu(x)  # apply the ReLU activation function
+        x = self.dropout(x)  # apply dropout
+        x = self.linear2(x)  # apply the second linear transformation
+        return x  # return the output of the feed-forward block
 
