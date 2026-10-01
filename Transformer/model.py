@@ -131,4 +131,18 @@ class feed_forward_block(nn.Module):
 # class encoder_layer
 
 class encoder_layer(nn.Module):
-    pass
+    def __init__(self, d_model, num_heads, d_ff, dropout):
+        super().__init__()
+        self.mha = multi_head_attention(d_model, num_heads, dropout)  # multi-head attention layer
+        self.ln1 = layer_norm(d_model)  # first layer normalization
+        self.fnn = feed_forward_block(d_model, d_ff, dropout)  # feed-forward block
+        self.ln2 = layer_norm(d_model)  # second layer normalization
+        self.dropout = nn.Dropout(dropout)  # dropout layer
+
+    def forward(self, x, mask=None):
+
+        # Apply multi-head attention and add residual connection
+        attn_output, __ = self.mha(x, x, x, mask)  # compute the attention output
+        x = self.ln1(x + self.dropout(attn_output)) # apply layer normalization to the sum of the input and the attention output (residual connection)
+        x = self.ln2(x + self.dropout(self.fnn(x)))  # apply the feed-forward block and add another residual connection
+        return x        
