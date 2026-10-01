@@ -128,3 +128,7 @@ class feed_forward_block(nn.Module):
         x = self.linear2(x)  # apply the second linear transformation
         return x  # return the output of the feed-forward block
 
+# class encoder_layer
+
+class encoder_layer(nn.Module):
+    pass
