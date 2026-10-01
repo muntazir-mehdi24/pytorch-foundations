@@ -47,7 +47,52 @@ class position_embeddings(nn.Module):
 # class multi_head_attention
 
 class multi_head_attention(nn.Module):
-    pass
+    def __init__(self, d_model, num_heads, dropouts):
+        super().__init__()
+        self.d_model = d_model
+        self.num_heads = num_heads
+        self.dropout = nn.Dropout(dropouts)
+        self.head_dim = d_model // num_heads 
+        assert self.head_dim * num_heads == d_model, "d_model must be divisible by num_heads"
+
+        self.w_q = nn.Linear(d_model, d_model)
+        self.w_k = nn.Linear(d_model, d_model)  
+        self.w_v = nn.Linear(d_model, d_model)
+        self.w_o = nn.Linear(d_model, d_model)
+
+    def forward(self, query, key, value, mask=None):
+        batch_size = query.size(0)
+
+        # now here we initiate the linear projections for the query, key, and value tensors. The linear layers (self.w_q, self.w_k, self.w_v) are applied to the input tensors (query, key, value) to transform them into new representations with the same dimensionality (d_model). This allows the model to learn different representations for the query, key, and value inputs, which are essential for the attention mechanism.
+        q = self.w_q(query)  # (batch_size, seq_len, d_model)
+        k = self.w_k(key)    # (batch_size, seq_len, d_model
+        v = self.w_v(value)  # (batch_size, seq_len, d_model)
+
+        # spitting the query, key, and value tensors into multiple heads. The view operation reshapes the tensors to have a shape of (batch_size, num_heads, seq_len, head_dim), where head_dim is the dimension of each attention head (d_model / num_heads). This allows the model to compute attention in parallel across multiple heads, enabling it to capture different aspects of the input sequence.
+        q = q.view(batch_size, -1, self.num_heads, self.head_dim).transpose(1, 2)  # (batch_size, num_heads, seq_len, head_dim)
+        k = k.view(batch_size, -1, self.num_heads, self.head_dim).transpose(1, 2)  # (batch_size, num_heads, seq_len, head_dim)
+        v = v.view(batch_size, -1, self.num_heads, self.head_dim).transpose(1, 2)  # (batch_size, num_heads, seq_len, head_dim)
+
+        # calculating the attention scores using the scaled dot-product attention mechanism. The attention scores are computed by taking the dot product of the query and key tensors, scaling them by the square root of the head dimension (self.head_dim), and applying a softmax function to obtain a probability distribution over the keys. This allows the model to focus on different parts of the input sequence based on the query.
+        scores = torch.matmul(q, k.transpose(-2, -1)) / math.sqrt(self.head_dim)  # (batch_size, num_heads, seq_len, seq_len)
+
+        if mask is not None:
+            scores = scores.masked_fill(mask == 0, float('-inf'))  # Apply the mask to the attention scores, setting the masked positions to negative infinity. This ensures that the model does not attend to the masked positions during the attention computation.
+
+        # applying the softmax function to the attention scores to obtain the attention weights. The softmax function normalizes the scores along the last dimension (seq_len), converting them into a probability distribution that sums to 1. This allows the model to weigh the importance of each key when computing the output representation.
+        attn_weights = torch.softmax(scores, dim=1) # (batch_size, num_heads, seq_len, seq_len)
+        # apply dropout to the attention weights to prevent overfitting during training. The dropout layer randomly sets a fraction of the attention weights to zero, encouraging the model to learn more robust representations that do not rely on specific attention patterns.
+        attn_weights = self.dropout(attn_weights)
+        # multiplying the attention weights with the value tensor to obtain the weighted sum of the values. This operation computes the output representation for each query by aggregating information from the values based on the attention weights, allowing the model to focus on relevant parts of the input sequence.
+        attn_output = torch.matmul(attn_weights, v)  # (batch_size, num_heads, seq_len, head_dim)
+
+        # concatenating the outputs from all attention heads and applying a linear transformation to obtain the final output representation. The transpose and contiguous operations rearrange the tensor dimensions, and the view operation reshapes the tensor to have a shape of (batch_size, seq_len, d_model). The linear layer (self.w_o) is then applied to transform the concatenated outputs into the desired output dimension (d_model).
+        attn_output = attn_output.transpose(1,2).contiguous().view(batch_size, -1, self.d_model)  # (batch_size, seq_len, d_model)
+        output = self.w_o(attn_output)  # (batch_size, seq_len, d_model)
+        return output, attn_weights  # returning the final output representation and the attention weights for further analysis or visualization.
+
+
+
 
 # class layer_norm
 
