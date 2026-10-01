@@ -113,3 +113,6 @@ class layer_norm(nn.Module):
 
 # class feed_forward_block
 
+class feed_forward_block(nn.Module):
+    pass
+
