@@ -106,8 +106,9 @@ class layer_norm(nn.Module):
 
     def forward(self, x):
         mean = x.mean(dim=-1, keepdim=True)  # compute the mean of the input tensor along the last dimension
-        std = x.std(dim=-1, keepdim=True)    # compute the standard deviation of the input tensor along the last dimension
-        normalized_x = (x - mean) / (std + self.eps)  # normalize the input tensor using the computed mean and standard deviation
+        # Replacing the std and normalized_x lines with this:
+        var = ((x - torch.mean(x, dim=-1, keepdim=True)) ** 2).mean(dim=-1, keepdim=True)
+        normalized_x = (x - mean) / torch.sqrt(var + self.eps)
         return self.alpha * normalized_x + self.bias  # apply the learnable scaling and bias parameters to the normalized tensor
 
 
