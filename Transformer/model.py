@@ -80,7 +80,7 @@ class multi_head_attention(nn.Module):
             scores = scores.masked_fill(mask == 0, float('-inf'))  # Apply the mask to the attention scores, setting the masked positions to negative infinity. This ensures that the model does not attend to the masked positions during the attention computation.
 
         # applying the softmax function to the attention scores to obtain the attention weights. The softmax function normalizes the scores along the last dimension (seq_len), converting them into a probability distribution that sums to 1. This allows the model to weigh the importance of each key when computing the output representation.
-        attn_weights = torch.softmax(scores, dim=1) # (batch_size, num_heads, seq_len, seq_len)
+        attn_weights = torch.softmax(scores, dim=-1) # (batch_size, num_heads, seq_len, seq_len)
         # apply dropout to the attention weights to prevent overfitting during training. The dropout layer randomly sets a fraction of the attention weights to zero, encouraging the model to learn more robust representations that do not rely on specific attention patterns.
         attn_weights = self.dropout(attn_weights)
         # multiplying the attention weights with the value tensor to obtain the weighted sum of the values. This operation computes the output representation for each query by aggregating information from the values based on the attention weights, allowing the model to focus on relevant parts of the input sequence.
