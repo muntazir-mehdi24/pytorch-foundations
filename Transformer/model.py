@@ -97,7 +97,19 @@ class multi_head_attention(nn.Module):
 # class layer_norm
 
 class layer_norm(nn.Module):
-    pass 
+    def __init__(self, d_model, eps = 1e-6):
+        super().__init__()
+        self.d_model = d_model
+        self.eps = eps
+        self.alpha = nn.Parameter(torch.ones(d_model))  # learnable scaling parameter
+        self.bias = nn.Parameter(torch.zeros(d_model))  # learnable bias parameter
+
+    def forward(self, x):
+        mean = x.mean(dim=-1, keepdim=True)  # compute the mean of the input tensor along the last dimension
+        std = x.std(dim=-1, keepdim=True)    # compute the standard deviation of the input tensor along the last dimension
+        normalized_x = (x - mean) / (std + self.eps)  # normalize the input tensor using the computed mean and standard deviation
+        return self.alpha * normalized_x + self.bias  # apply the learnable scaling and bias parameters to the normalized tensor
+
 
 # class feed_forward_block
 
