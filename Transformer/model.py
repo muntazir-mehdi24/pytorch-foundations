@@ -146,3 +146,8 @@ class encoder_layer(nn.Module):
         x = self.ln1(x + self.dropout(attn_output)) # apply layer normalization to the sum of the input and the attention output (residual connection)
         x = self.ln2(x + self.dropout(self.fnn(x)))  # apply the feed-forward block and add another residual connection
         return x        
+
+
+# class decoder_layer
+class decoder_layer(nn.Module):
+    pass
