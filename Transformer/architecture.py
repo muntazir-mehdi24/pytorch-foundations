@@ -3,7 +3,7 @@
 # these are essential wrapers that repeat the encoder and decoder layers N times to form the complete transformer model. 
 import torch
 import torch.nn as nn
-from model import encoder_layer, decoder_layer
+from model import encoder_layer, decoder_layer, input_embeddings, position_embeddings
 
 # class Encoder
 class Encoder(nn.Module):
@@ -40,22 +40,31 @@ class Decoder(nn.Module):
 
 # the transformer class is the main class that combines the encoder and decoder stacks, as well as the input and output embeddings.
 class Transformer(nn.Module):
-    def __init__(self, num_layers, d_model, num_heads, dff, input_vocab_size, target_vocab_size, dropout):
+    def __init__(self, num_layers, d_model, num_heads, dff, input_vocab_size, target_vocab_size, dropout, max_len=5000):
         super().__init__()
-        # we first define the input and output embeddings.
-        self.encoder_embedding = nn.Embedding(input_vocab_size, d_model)
-        self.decoder_embedding = nn.Embedding(target_vocab_size, d_model)
-        # we then define the encoder and decoder stacks.
+        # Use the custom input_embeddings to ensure math.sqrt(d_model) scaling is applied
+        self.encoder_embedding = input_embeddings(d_model, input_vocab_size)
+        self.decoder_embedding = input_embeddings(d_model, target_vocab_size)
+        
+        # Instantiate the positional embeddings you built
+        self.pos_embed = position_embeddings(d_model, dropout, max_len)
+        
+        # Define the encoder and decoder stacks
         self.encoder = Encoder(num_layers, d_model, num_heads, dff, dropout)
         self.decoder = Decoder(num_layers, d_model, num_heads, dff, dropout)
-        # we then define the final linear layer that maps the decoder output to the target vocabulary size.
+        
+        # Define the final linear layer
         self.final_layer = nn.Linear(d_model, target_vocab_size)
 
     def forward(self, inp, tar, enc_padding_mask, look_ahead_mask, dec_padding_mask):
-        # we first pass the input through the encoder embedding and add positional encoding.
-        enc_output = self.encoder(self.encoder_embedding(inp), enc_padding_mask)
-        # we then pass the target through the decoder embedding and add positional encoding.
-        dec_output = self.decoder(self.decoder_embedding(tar), enc_output, dec_padding_mask, look_ahead_mask)
-        # we then pass the decoder output through the final linear layer to get the logits for each token in the target vocabulary.
+        # Apply embeddings AND positional encodings
+        enc_input = self.pos_embed(self.encoder_embedding(inp))
+        enc_output = self.encoder(enc_input, enc_padding_mask)
+        
+        # Apply embeddings AND positional encodings for the target sequence
+        dec_input = self.pos_embed(self.decoder_embedding(tar))
+        dec_output = self.decoder(dec_input, enc_output, dec_padding_mask, look_ahead_mask)
+        
+        # Map to vocabulary space
         final_output = self.final_layer(dec_output)
         return final_output
