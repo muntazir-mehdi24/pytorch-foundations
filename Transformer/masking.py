@@ -21,14 +21,26 @@ def look_ahead_mask(size):
 
     return mask  # return the mask tensor, which can be used in the attention mechanism to prevent the model from attending to future tokens in the output sequence.
 
-# create_masks function is used to create the padding and look-ahead masks for the input and output sequences, respectively. The function takes in the input and output sequences as arguments, and returns the padding mask for the input sequence, the look-ahead mask for the output sequence, and the padding mask for the output sequence. The padding mask for the output sequence is created by calling the PaddingMask function on the output sequence. The look-ahead mask for the output sequence is created by calling the look_ahead_mask function on the length of the output sequence. The resulting masks can be used in the attention mechanism to ensure that the model only attends to relevant positions in the input and output sequences.
+# create_masks function is used to create the necessary masks for the transformer model. It takes the input and output sequences as arguments and returns the encoder padding mask, combined mask, and decoder padding mask. The encoder padding mask is created using the PaddingMask function on the input sequence. The decoder padding mask is also created using the PaddingMask function on the input sequence. The combined mask is created by combining the look ahead mask and the target padding mask, which is created using the PaddingMask function on the output sequence. The combined mask ensures that the model only attends to previous tokens in the output sequence and ignores future tokens. The function returns the masks in the order expected by the transformer's forward pass.
 def create_masks(inp, tar):
-    # inp is the input sequence, which is a tensor of shape (batch_size, seq_len)
-    # tar is the output sequence, which is a tensor of shape (batch_size, seq_len)
+    # inp shape: (batch_size, inp_seq_len)
+    # tar shape: (batch_size, tar_seq_len)
 
-    enc_padding_mask = PaddingMask(inp)  # create the padding mask for the input sequence
-    dec_padding_mask = PaddingMask(tar)  # create the padding mask for the output sequence
-    look_ahead_mask = look_ahead_mask(tar.size(1))  # create the look-ahead mask for the output sequence
+    # 1. Encoder Padding Mask (Encoder Self-Attention)
+    enc_padding_mask = PaddingMask(inp)
+    
+    # 2. Decoder Padding Mask (Decoder Cross-Attention)
+    # The decoder looks back at the input sentence, so it masks the input's padding!
+    dec_padding_mask = PaddingMask(inp)
+    
+    # 3. Combined Mask (Decoder Self-Attention)
+    # We rename the variable to `look_ahead` to avoid the Python naming collision
+    look_ahead = look_ahead_mask(tar.size(1))
+    target_padding = PaddingMask(tar)
+    
+    # Combine them: only allow attention if it is a real word AND it is not in the future
+    combined_mask = torch.logical_and(target_padding, look_ahead == 1)
 
-    return enc_padding_mask, look_ahead_mask, dec_padding_mask  # return the masks, which can be used in the attention mechanism to ensure that the model only attends to relevant positions in the input and output sequences.
-
+    # Return them in the exact order your Transformer forward pass expects:
+    # forward(self, inp, tar, enc_padding_mask, look_ahead_mask, dec_padding_mask)
+    return enc_padding_mask, combined_mask, dec_padding_mask
