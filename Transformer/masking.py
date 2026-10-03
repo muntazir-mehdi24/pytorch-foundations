@@ -1,7 +1,6 @@
 # in this file we will define the masking functions that are used in the transformer model. These functions are used to create masks for the input and output sequences, which are used to prevent the model from attending to certain positions in the sequence. The masks are used in the attention mechanism to ensure that the model only attends to relevant positions in the sequence.
 import torch    
 import torch.nn as nn
-from 
 
 # PaddingMask function is used to create a mask for the input sequence, which is used to prevent the model from attending to padding tokens. The padding tokens are typically represented by 0 in the input sequence. The mask is created by checking if each token in the input sequence is not equal to 0, and then unsqueezing the mask tensor to make it compatible with the attention mechanism. The resulting mask tensor has a shape of (batch_size, 1, 1, seq_len), where seq_len is the length of the input sequence. This mask can be used in the attention mechanism to ensure that the model only attends to non-padding tokens in the input sequence.
 def PaddingMask(seq):
