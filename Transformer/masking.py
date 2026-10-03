@@ -2,3 +2,6 @@
 import torch    
 import torch.nn as nn
 
+# class PaddingMask
+class PaddingMask(seq):
+    pass
