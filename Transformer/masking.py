@@ -15,4 +15,8 @@ def PaddingMask(seq):
 
 # look_ahead_mask function is used to create a mask for the output sequence, which is used to prevent the model from attending to future tokens in the sequence. The mask is created by generating a lower triangular matrix of ones, which is then unsqueezed to make it compatible with the attention mechanism. The resulting mask tensor has a shape of (batch_size, 1, seq_len, seq_len), where seq_len is the length of the output sequence. This mask can be used in the attention mechanism to ensure that the model only attends to previous tokens in the output sequence.
 def look_ahead_mask(size):
-    pass
+    # size is the length of the output sequence, which is an integer
+
+    mask = torch.tril(torch.ones(size, size)).unsqueeze(0).unsqueeze(1) # create a lower triangular matrix of ones, which is then unsqueezed to make it compatible with the attention mechanism. The resulting shape is (1, 1, seq_len, seq_len)
+
+    return mask  # return the mask tensor, which can be used in the attention mechanism to prevent the model from attending to future tokens in the output sequence.
