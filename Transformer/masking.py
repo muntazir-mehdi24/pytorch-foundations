@@ -20,3 +20,15 @@ def look_ahead_mask(size):
     mask = torch.tril(torch.ones(size, size)).unsqueeze(0).unsqueeze(1) # create a lower triangular matrix of ones, which is then unsqueezed to make it compatible with the attention mechanism. The resulting shape is (1, 1, seq_len, seq_len)
 
     return mask  # return the mask tensor, which can be used in the attention mechanism to prevent the model from attending to future tokens in the output sequence.
+
+# create_masks function is used to create the padding and look-ahead masks for the input and output sequences, respectively. The function takes in the input and output sequences as arguments, and returns the padding mask for the input sequence, the look-ahead mask for the output sequence, and the padding mask for the output sequence. The padding mask for the output sequence is created by calling the PaddingMask function on the output sequence. The look-ahead mask for the output sequence is created by calling the look_ahead_mask function on the length of the output sequence. The resulting masks can be used in the attention mechanism to ensure that the model only attends to relevant positions in the input and output sequences.
+def create_masks(inp, tar):
+    # inp is the input sequence, which is a tensor of shape (batch_size, seq_len)
+    # tar is the output sequence, which is a tensor of shape (batch_size, seq_len)
+
+    enc_padding_mask = PaddingMask(inp)  # create the padding mask for the input sequence
+    dec_padding_mask = PaddingMask(tar)  # create the padding mask for the output sequence
+    look_ahead_mask = look_ahead_mask(tar.size(1))  # create the look-ahead mask for the output sequence
+
+    return enc_padding_mask, look_ahead_mask, dec_padding_mask  # return the masks, which can be used in the attention mechanism to ensure that the model only attends to relevant positions in the input and output sequences.
+
